@@ -1,21 +1,25 @@
-import {Button, Layout, Menu} from 'antd';
-import {Link, useLocation} from 'react-router-dom';
+import {Avatar, Button, Layout, Menu} from 'antd';
+import {Link, useLocation, useNavigate} from 'react-router-dom';
+import {useAppDispatch, useAppSelector} from "../../hooks/redux";
+import {logout} from "../../store/accounts/accounts.slice.ts";
+import ButtonGroup from "antd/es/button/button-group";
+import {UserOutlined, PoweroffOutlined} from '@ant-design/icons';
+import {APP_ENV} from "../../env";
 
 const {Header} = Layout;
 
-const items1 = ['Home', 'Add'].map((key) => ({
-    key,
-    label: `${key}`,
-    link: key.toLowerCase(), // Add a link property based on the item key
-}));
-
-
-const ButtonStyle = {
-    margin: '0 10px 0 0',
-};
 const DefaultHeader = () => {
     const location = useLocation();
+    const navigate = useNavigate();
 
+    const dispatch = useAppDispatch();
+    const {isLogin, user} = useAppSelector(state => state.account);
+
+    const handleLogout = () => {
+        //console.log("Logout user");
+        dispatch(logout());
+        navigate("/");
+    };
 
     return (
         <Header style={{display: 'flex', alignItems: 'center'}}>
@@ -26,23 +30,34 @@ const DefaultHeader = () => {
                 selectedKeys={[location.pathname.substr(1)]} // Highlight the selected menu item
                 style={{flex: 1, minWidth: 0}}
             >
-                {items1.map((item) => (
-                    <Menu.Item key={item.link}>
-                        <Link to={`/${item.link}`}>{item.label}</Link>
+                    <Menu.Item key={"products"}>
+                        {/*<Link to={`/product`}>Продукти</Link>*/}
                     </Menu.Item>
-                ))}
             </Menu>
 
-            <>
-                <Link to={"/login"}>
-                    <Button style={ButtonStyle}>
-                        Sign-In
+            {isLogin ? (
+                <ButtonGroup size="large">
+                    <Button
+                        type="primary"
+                        style={{display: 'flex'}}
+                        icon={<Avatar  size="small" src={`${APP_ENV.BASE_URL}images/${user?.name}`}/>}
+                    >
+                        {user?.name}
+                    </Button>
+                    <Button
+                        type="primary"
+                        icon={<PoweroffOutlined/>}
+                        onClick={() => handleLogout()}
+                    />
+                </ButtonGroup>
+
+            ) : (
+                <Link to="/login" style={{color: 'inherit', textDecoration: 'none'}}>
+                    <Button type="primary" icon={<UserOutlined/>}>
+                        Увійти
                     </Button>
                 </Link>
-                <Link to={"/register"}>
-                    <Button>Register</Button>
-                </Link>
-            </>
+            )}
 
         </Header>
     );
